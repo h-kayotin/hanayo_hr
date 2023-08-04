@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <style>
+    body{
+        background: url('{{ url_for('static',filename='img/backgroun.jpg') }}');
+    }
+    #sousuo{
+        height: 500px;
+    }
+    </style>
+    <div id="sousuo"style="text-align: center ; padding: 5px">
+			<form method="get" action="/search">
+				<div class="form">
+					<p>岗位名称</p>
+					<input class="form-name"placeholder="java软件工程师" name="kw" type="text" autofocus>
+				</div><br>
+				<div class="form" style="margin-top: 30px;">
+					<p>搜索的省份</p>
+					<input class="form-name"placeholder="例如:全国,江苏省" name="city" type="text" autofocus>
+				</div><br>
+				<input type="submit" value="搜索" class="btn" />
+			</form>
+    </div>
+
+{% endblock %}

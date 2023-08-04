@@ -1,0 +1,180 @@
+
+{% extends "base.html" %}
+{% block content %}
+    <style>
+    body{
+        background: url('{{ url_for('static',filename='img/backgroun.jpg') }}');
+    }
+    </style>
+
+    <div id="xinzi"></div>
+    <table align="center">
+    <tr>
+        <td>
+            <div id="xueli"></div>
+        </td>
+        <td>
+            <div id="jinyan"></div>
+        </td>
+    </tr>
+    </table>
+
+
+
+    <script type="text/javascript">
+    $(document).ready(function() {
+        var chart = {
+            type: 'column',
+            backgroundColor: 'rgba(0,0,0,0)'
+        };
+        var title = {
+            useHTML: true,
+            style: {
+                color: '#000',      //字体颜色
+                "fontSize": "29px",   //字体大小
+                fontWeight: 'bold'
+            },
+            text: '工资分布图'
+        };
+        var subtitle = {
+            text: '51job.com'
+        };
+        var xAxis = {
+            categories: ['0~5k','5~8k','8k~11k','11k~14k','14k~17k','17k~20k','20k~23k','23K以上'],
+            crosshair: true
+        };
+        var yAxis = {
+            min: 0,
+            title: {
+                text: '岗位数'
+            }
+        };
+        var tooltip = {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:.1f} 个</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        };
+        var plotOptions = {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0
+            }
+        };
+        var credits = {
+            enabled: false
+        };
+
+        var series= [{
+            name: '岗位数',
+            data: {{ xz|tojson }}
+        }];
+
+        var json = {};
+        json.chart = chart;
+        json.title = title;
+        json.subtitle = subtitle;
+        json.tooltip = tooltip;
+        json.xAxis = xAxis;
+        json.yAxis = yAxis;
+        json.series = series;
+        json.plotOptions = plotOptions;
+        json.credits = credits;
+        $('#xinzi').highcharts(json);
+
+    });
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+       let chart = {
+           plotBackgroundColor: null,
+           plotBorderWidth: null,
+           plotShadow: false,
+           backgroundColor: 'rgba(0,0,0,0)'
+       };
+       let title = {
+           useHTML: true,
+            style: {
+                color: '#000',      //字体颜色
+                "fontSize": "29px",   //字体大小
+                fontWeight: 'bold'
+            },
+          text: '学历占比情况'
+       };
+       let tooltip = {
+          pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+       };
+       let plotOptions = {
+          pie: {
+             allowPointSelect: true,
+             cursor: 'pointer',
+             dataLabels: {
+                enabled: true
+             },
+             showInLegend: true
+          }
+       };
+       let series= [{
+          type: 'pie',
+          name: '学历',
+          data: {{xl|tojson}}
+       }];
+
+       let json = {};
+       json.chart = chart;
+       json.title = title;
+       json.tooltip = tooltip;
+       json.series = series;
+       json.plotOptions = plotOptions;
+       $('#xueli').highcharts(json);
+    });
+    </script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+       let chart = {
+           plotBackgroundColor: null,
+           plotBorderWidth: null,
+           plotShadow: false,
+           backgroundColor: 'rgba(0,0,0,0)'
+       };
+       let title = {
+           useHTML: true,
+            style: {
+                color: '#000',      //字体颜色
+                "fontSize": "29px",   //字体大小
+                fontWeight: 'bold'
+            },
+          text: '工作年限要求'
+       };
+       let tooltip = {
+          pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+       };
+       let plotOptions = {
+          pie: {
+             allowPointSelect: true,
+             cursor: 'pointer',
+             dataLabels: {
+                enabled: true
+             },
+             showInLegend: true
+          }
+       };
+       let series= [{
+          type: 'pie',
+          name: '工作年限要求',
+          data: {{jy|tojson}}
+       }];
+
+       let json = {};
+       json.chart = chart;
+       json.title = title;
+       json.tooltip = tooltip;
+       json.series = series;
+       json.plotOptions = plotOptions;
+       $('#jinyan').highcharts(json);
+    });
+    </script>
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+    <form method="get" action="/list">
+        <div class="input-group col-md-3" style="margin-top:0px; margin-left: 75%; positon:relative">
+            <input type="text" class="form-control" placeholder="请输入要搜索的内容" name="key"/>
+            <span class="input-group-btn">
+               <button class="btn btn-info btn-search" style="margin-left:3px">搜索</button>
+            </span>
+        </div>
+    </form>
+
+
+    <table class="table table-bordered">
+    <tr>
+        <th>职位</th>
+        <th>公司</th>
+        <th>城市</th>
+        <th>最低薪资</th>
+        <th>最高薪资</th>
+        <th>发布日期</th>
+    </tr>
+        {% for a in datas.items %}
+            <tr>
+                <td>{{ a.post }}</td>
+                <td>{{ a.company }}</td>
+                <td>{{ a.address }}</td>
+                <td>{{ a.salary_min }}</td>
+                <td>{{ a.salary_max }}</td>
+                <td>{{ a.dateT }}</td>
+            </tr>
+    {% endfor %}
+    </table>
+
+
+    <div style="text-align: center">
+        <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+
+            {% if datas.has_prev %}
+                <li class="page-item">
+           <a class="page-link" href="/list?page={{ datas.prev_num }}" aria-label="Previous">
+               <span aria-hidden="true">&laquo;</span>
+               <span class="sr-only">Previous</span>
+           </a>
+       </li>
+            {% endif %}
+
+            {% for i in datas.iter_pages() %}
+                {% if i == None %}
+                    <li class="page-item"><a class="page-link" href="#">...</a></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="/list?page={{ i }}&key={{ key }}">{{ i }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if datas.has_next %}
+                <li class="page-item">
+           <a class="page-link" href="/list?page={{ datas.next_num }}&key={{ key }}" aria-label="Next">
+               <span aria-hidden="true">&raquo;</span>
+               <span class="sr-only">Next</span>
+           </a>
+       </li>
+            {% endif %}
+        </ul>
+        </nav>
+        当前页数：{{ datas.page }}
+        总页数：{{ datas.pages }}
+        一共有{{ datas.total }}条数据
+        <br>
+    </div>
+{% endblock %}
