@@ -26,3 +26,7 @@ class SpiderHR:
         city_code = city_dict[city_cn]
         self.default_page = 1
         self.s_url = f"https://sou.zhaopin.com/?jl={city_code}&kw={key_word}&p={self.default_page}"
+        self.total_page = 0
+
+    def get_total_page(self):
+        pass
