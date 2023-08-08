@@ -110,7 +110,7 @@ class SpiderHR:
             print(type(err), err)
         finally:
             # 5.关闭连接
-            conn.close()
+            self.db.close()
 
 
 if __name__ == '__main__':
