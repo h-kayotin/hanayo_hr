@@ -96,16 +96,16 @@ class SpiderHR:
         """数据保存到mysql数据库"""
         sql_text = f""
         try:
-            # 2.获取游标对象
+            # 获取游标对象
             with self.db.cursor() as cursor:
-                # 3.通过游标对象对数据库服务器发出sql语句
+                # 通过游标对象对数据库服务器发出sql语句
                 affected_rows = cursor.execute(sql_text)
                 if affected_rows == 1:
                     print("新增部门成功")
-            # 4.提交
+            # 提交
             self.db.commit()
         except pymysql.MySQLError as err:
-            # 4.回滚
+            # 回滚
             self.db.rollback()
             print(type(err), err)
         finally:
