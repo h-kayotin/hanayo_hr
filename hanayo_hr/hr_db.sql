@@ -29,7 +29,7 @@ CREATE TABLE `tb_data`(
 -- 建一个city表，存储每一地区的的编码对应的地区
 -- ------------------------
 DROP TABLE IF EXISTS `tb_city`;
-CREATE TABLE `city`(
+CREATE TABLE `tb_city`(
 	`city_id` int(11) NOT NULL COMMENT '城市ID',
 	`city_name` varchar(30) NOT NULL COMMENT '城市',
     PRIMARY KEY(`city_id`)

@@ -10,6 +10,7 @@ import requests
 import random
 from bs4 import BeautifulSoup
 import pymysql
+import re
 
 city_dict = {
     "上海": 538,
@@ -81,6 +82,11 @@ class SpiderHR:
         self.total_page = page_num
         print(f"页数获取完毕，{self.city_cn}的{self.key_word}岗位共有{page_num}页。")
 
+
+    def get_info_by_pages(self):
+        pass
+
+
     @staticmethod
     def get_job_info(s_url, page, headers):
         url = f"{s_url}{page}"
@@ -90,11 +96,45 @@ class SpiderHR:
             "class": "joblist-box__item clearfix"
         })
         for div in divs:
-            pass
+            job_name = div.find("span", class_='iteminfo__line1__jobname__name').text
+            company_name = div.find("span", class_='iteminfo__line1__compname__name').text
+            info_li_list = div.find_all("li", class_='iteminfo__line2__jobdesc__demand__item')
+            comp_add = info_li_list[0].text
+            job_exp = info_li_list[1].text
+            job_edu = info_li_list[2].text
+            job_content = ""
+            content_list = div.find_all("div", class_='iteminfo__line3__welfare__item')
+            for con in content_list:
+                job_content += f"{con.text};"
+
+            salary_info = div.find("p", class_='iteminfo__line2__jobdesc__salary').text.strip().split("-")
+            salary_min = re.findall(r'\d+\.?\d*', salary_info[0])[0]
+            salary_max = re.findall(r'\d+\.?\d*', salary_info[1])[0]
+            salary_unit = re.findall(r'\D$', salary_info[0])[0]
+            if salary_unit == "万":
+                num = 10000
+            else:
+                num = 1000
+            salary_min = float(salary_min) * num
+            salary_max = float(salary_max) * num
+
+            print(job_name)
+            print(company_name)
+            print(comp_add)
+            print(job_edu)
+            print(job_exp)
+            print(job_content)
+            print(salary_min)
+            print(salary_max)
+            break
 
     def save_2_db(self, data):
         """数据保存到mysql数据库"""
-        sql_text = f""
+        sql_text = f"""
+            insert into tb_data (data_post,data_company,data_address,data_salary_min,
+            data_salary_max,data_dateT,data_edu,data_exper,data_content) 
+            values("测试职位","hanayo_company","下北泽",2000,5000,2023-07-07,"本科","3年","详细信息")
+        """
         try:
             # 获取游标对象
             with self.db.cursor() as cursor:
@@ -115,4 +155,7 @@ class SpiderHR:
 
 if __name__ == '__main__':
     my_spider = SpiderHR("数据分析师", "上海")
-    my_spider.get_total_page()
+    # my_spider.get_total_page()
+    my_spider.get_headers()
+
+    my_spider.get_job_info("https://sou.zhaopin.com/?jl=538&kw=python&p=", 2, my_spider.headers)

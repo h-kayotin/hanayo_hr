@@ -8,7 +8,7 @@ Date 2023/8/4
 HOST = '192.168.32.11'
 PORT = '3306'
 USERNAME = 'root'
-PASSWORD = 'abc%401234'
+PASSWORD = 'abc@1234'
 DATABASE = 'hanayo_hr_db'
 DB_URI = f'mysql+pymysql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8mb4'
 SQLALCHEMY_DATABASE_URI = DB_URI
