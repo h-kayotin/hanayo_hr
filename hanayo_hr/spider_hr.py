@@ -11,6 +11,10 @@ import random
 from bs4 import BeautifulSoup
 import pymysql
 import re
+import datetime
+from concurrent.futures import ThreadPoolExecutor
+from threading import RLock
+import os
 
 city_dict = {
     "上海": 538,
@@ -38,8 +42,19 @@ class SpiderHR:
         self.db = pymysql.connect(host="192.168.32.11", port=3306,
                                   user=USERNAME, password=PASSWORD,
                                   database=DATABASE, charset="utf8mb4")
+        self.datetime = datetime.datetime.today()
+        root_path = os.path.abspath(os.path.dirname(__file__))
+        self.log_path = os.path.join(root_path, "logs")
+        if not os.path.exists(self.log_path):
+            os.makedirs(self.log_path)
+        self.count = 0
+        self.lock = RLock()
 
     def get_headers(self):
+        """
+        生成请求的headers信息
+        :return:
+        """
         num = random.randint(0, len(user_agent) - 1)
         self.headers = {
             "User-Agent": user_agent[num],
@@ -47,6 +62,7 @@ class SpiderHR:
         }
 
     def get_pages(self, page_num):
+        """获取底部页码的span，用以判断这一页有没有内容"""
         url = f"{self.s_url}{page_num}"
         res = requests.get(url, headers=self.headers)
         bs_html = BeautifulSoup(res.content, "html.parser")
@@ -55,42 +71,51 @@ class SpiderHR:
         })
         return len(items_page_spans)
 
-    def get_total_page(self):
-        print(f"正在获取{self.city_cn}的关键字：{self.key_word}的总页数-->", end="")
-        self.get_headers()
-        page_num = 100
-        while True:
-            len_spans = self.get_pages(page_num)
-            if not len_spans:
-                page_num = page_num // 2
-            else:
-                break
-        page_num += 5
-        while True:
-            len_spans = self.get_pages(page_num)
-            if len_spans:
-                page_num += 5
-            else:
-                break
-        page_num -= 1
-        while True:
-            len_spans = self.get_pages(page_num)
-            if not len_spans:
-                page_num -= 1
-            else:
-                break
-        self.total_page = page_num
-        print(f"页数获取完毕，{self.city_cn}的{self.key_word}岗位共有{page_num}页。")
-
-
     def get_info_by_pages(self):
-        pass
-
+        """多线程的获取每一页的数据"""
+        with ThreadPoolExecutor(max_workers=32) as pool:
+            while True:
+                self.total_page += 1
+                if self.get_pages(self.total_page):
+                    pool.submit(self.get_job_info, page=self.total_page)
+                else:
+                    break
 
     @staticmethod
-    def get_job_info(s_url, page, headers):
-        url = f"{s_url}{page}"
-        res = requests.get(url, headers=headers)
+    def trans_salary(salary_str):
+        """
+        薪资格式转化
+        :param salary_str:薪资字符串比如1.5万
+        :return: 返回数字，例如15000
+        """
+        try:
+            salary = re.findall(r'\d+\.?\d*', salary_str)[0]
+            is_10_k = re.search(r'万', salary_str)
+            is_k = re.search(r'千', salary_str)
+            if is_10_k:
+                # salary_unit = "万"
+                num = 10000
+            elif is_k:
+                # salary_unit = "千"
+                num = 1000
+            else:
+                # salary_unit = "日"
+                num = 1
+            salary_num = float(salary) * num
+        except IndexError:
+            salary_num = 0
+
+        return salary_num
+
+    def get_job_info(self, page):
+        """
+        根据页码循环获取一页中的所有职位数据
+        :param page: 页码
+        :return: 无
+        """
+        print(f"正在读取第{page}页的数据-->", end="")
+        url = f"{self.s_url}{page}"
+        res = requests.get(url, headers=self.headers)
         bs_html = BeautifulSoup(res.content, "html.parser")
         divs = bs_html.find_all("div", {
             "class": "joblist-box__item clearfix"
@@ -107,33 +132,32 @@ class SpiderHR:
             for con in content_list:
                 job_content += f"{con.text};"
 
-            salary_info = div.find("p", class_='iteminfo__line2__jobdesc__salary').text.strip().split("-")
-            salary_min = re.findall(r'\d+\.?\d*', salary_info[0])[0]
-            salary_max = re.findall(r'\d+\.?\d*', salary_info[1])[0]
-            salary_unit = re.findall(r'\D$', salary_info[0])[0]
-            if salary_unit == "万":
-                num = 10000
-            else:
-                num = 1000
-            salary_min = float(salary_min) * num
-            salary_max = float(salary_max) * num
+            salary_info = div.find("p", class_='iteminfo__line2__jobdesc__salary').text.split("·")[0].split("-")
+            try:
+                salary_min = SpiderHR.trans_salary(salary_info[0].strip())
+                salary_max = SpiderHR.trans_salary(salary_info[1].strip())
+            except IndexError:
+                salary_min = 0
+                salary_max = 0
 
-            print(job_name)
-            print(company_name)
-            print(comp_add)
-            print(job_edu)
-            print(job_exp)
-            print(job_content)
-            print(salary_min)
-            print(salary_max)
-            break
+            data = {
+                "data_post": job_name, "data_company": company_name, "data_address": comp_add,
+                "data_salary_min": salary_min, "data_salary_max": salary_max,
+                "data_edu": job_edu, "data_exp": job_exp, "data_content": job_content
+            }
+            self.lock.acquire()
+            self.save_2_db(data)
+            self.lock.release()
+        print(f"第{page}页数据读取完毕。\n", end="")
 
     def save_2_db(self, data):
         """数据保存到mysql数据库"""
         sql_text = f"""
             insert into tb_data (data_post,data_company,data_address,data_salary_min,
-            data_salary_max,data_dateT,data_edu,data_exper,data_content) 
-            values("测试职位","hanayo_company","下北泽",2000,5000,2023-07-07,"本科","3年","详细信息")
+            data_salary_max,data_date,data_edu,data_exp,data_content) 
+            values("{data['data_post']}", "{data['data_company']}", "{data['data_address']}",
+            "{data['data_salary_min']}", "{data['data_salary_max']}" ,"{self.datetime}",
+            "{data['data_edu']}","{data['data_exp']}","{data['data_content']}")
         """
         try:
             # 获取游标对象
@@ -141,21 +165,50 @@ class SpiderHR:
                 # 通过游标对象对数据库服务器发出sql语句
                 affected_rows = cursor.execute(sql_text)
                 if affected_rows == 1:
-                    print("新增部门成功")
-            # 提交
+                    self.count += 1
+                if self.count % 100 == 0:
+                    print(f"已保存{self.count}条数据-->", end="")
+                    # print("插入数据成功")
             self.db.commit()
         except pymysql.MySQLError as err:
-            # 回滚
+            # 如果出现报错就回滚数据
             self.db.rollback()
-            print(type(err), err)
-        finally:
-            # 5.关闭连接
-            self.db.close()
+            err_log = f"{type(err)}，错误信息：{err}\n"
+            print(err_log)
+            self.save_log(False, err_log)
+
+    def clo_db(self):
+        suc_log = f"数据读取完毕，共保存了{self.count}条数据。\n"
+        print(suc_log)
+        self.save_log(True, suc_log)
+        self.db.close()
+
+    def save_log(self, log_type, log_txt):
+        """
+        保存日志
+        :param log_type: True表示成功日志，False表示错误日志
+        :param log_txt: 日志文本
+        :return:
+        """
+        if log_type:
+            log_name = "success.log"
+        else:
+            log_name = "error.log"
+        with open(f"{self.log_path}/{log_name}", "a", encoding="utf-8") as file:
+            file.write(log_txt)
+
+    def do_work(self):
+        log_txt = f"开始读取城市：{self.city_cn}，关键字：{self.key_word}的数据\n"
+        print(log_txt, end="")
+        self.save_log(True, log_txt)
+        self.get_headers()
+        self.get_info_by_pages()
+        self.clo_db()
 
 
 if __name__ == '__main__':
-    my_spider = SpiderHR("数据分析师", "上海")
-    # my_spider.get_total_page()
-    my_spider.get_headers()
+    my_spider = SpiderHR("python", "上海")
+    my_spider.do_work()
 
-    my_spider.get_job_info("https://sou.zhaopin.com/?jl=538&kw=python&p=", 2, my_spider.headers)
+
+
