@@ -39,3 +39,12 @@ CREATE TABLE `tb_city`(
 
 INSERT INTO `city` VALUES ('530', '北京'),('538', '上海');
 
+-- ----------------------
+-- 建一个keys表，存储已经爬取过的关键词
+-- ----------------------
+DROP TABLE IF EXISTS `tb_keys`;
+CREATE TABLE `tb_keys`(
+	`keys_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '关键词ID',
+	`keys_name` varchar(30) NOT NULL COMMENT '关键词详情',
+    PRIMARY KEY(`keys_id`)
+)ENGINE=InnoDB auto_increment=1 comment '关键词表';
