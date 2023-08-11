@@ -35,6 +35,7 @@ class SpiderHR:
         self.city_code = city_dict[city_cn]
         self.default_page = 1
         self.key_word = key_word
+        self.key_word_count = 0
         self.s_url = f"https://sou.zhaopin.com/?jl={self.city_code}&kw={self.key_word}&p="
         self.total_page = 0
         self.headers = {
@@ -49,6 +50,18 @@ class SpiderHR:
             os.makedirs(self.log_path)
         self.count = 0
         self.lock = RLock()
+
+    def get_key_count(self):
+        sql_text = """
+            select keys_name from tb_keys 
+        """
+        with self.db.cursor() as cursor:
+            affected_rows = cursor.execute(sql_text)
+            if affected_rows:
+                rows = cursor.fetchall()
+                self.key_word_count = len(rows) + 1
+                return False
+
 
     def get_headers(self):
         """
@@ -176,6 +189,30 @@ class SpiderHR:
             err_log = f"{type(err)}，错误信息：{err}\n"
             print(err_log)
             self.save_log(False, err_log)
+
+    def save_key(self):
+        sql_text = f"""
+            insert into tb_keys (keys_name, keys_count) 
+            values("{self.key_word}", "{data['data_company']}")
+        """
+        try:
+            # 获取游标对象
+            with self.db.cursor() as cursor:
+                # 通过游标对象对数据库服务器发出sql语句
+                affected_rows = cursor.execute(sql_text)
+                if affected_rows == 1:
+                    self.count += 1
+                if self.count % 100 == 0:
+                    print(f"已保存{self.count}条数据-->", end="")
+                    # print("插入数据成功")
+            self.db.commit()
+        except pymysql.MySQLError as err:
+            # 如果出现报错就回滚数据
+            self.db.rollback()
+            err_log = f"{type(err)}，错误信息：{err}\n"
+            print(err_log)
+            self.save_log(False, err_log)
+
 
     def clo_db(self):
         suc_log = f"数据读取完毕，共保存了{self.count}条数据。\n"

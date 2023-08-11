@@ -2,9 +2,10 @@
 <title>{% block title %}{% endblock %} - Flaskr</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <nav>
-  <h1>hanayo——hr</h1>
+  <h1>hanayo_hr</h1>
   <ul>
-    欢迎使用Hanayo的求职工具
+    <li><span>{{date_today}}，欢迎！</span>
+    <li><a href="/">回到主页</a>
   </ul>
 </nav>
 <section class="content">
@@ -16,3 +17,14 @@
   {% endfor %}
   {% block content %}{% endblock %}
 </section>
+
+
+<div class="footer">
+    <div class="footer_l">
+        <ul >
+            <li><a href="">回到首页</a></li>
+            <li><a href="">关于</a></li>
+            <li><a href="">©2023 - All Rights Reserved © 花阳亲</a></li>
+        </ul>
+    </div>
+</div>

@@ -15,6 +15,7 @@ from hanayo_hr.db import get_db
 import pymysql
 
 bp = Blueprint('index', __name__)
+date_today = datetime.datetime.today().strftime('%Y-%m-%d')
 
 
 def get_data():
@@ -40,5 +41,9 @@ def get_data():
 
 @bp.route('/')
 def index():
-
-    return render_template('pages/index.html')
+    keys = [
+        {"keys_name": "python", "keys_count": 200},
+        {"keys_name": "java", "keys_count": 200},
+        {"keys_name": "c++", "keys_count": 200}
+    ]
+    return render_template('pages/index.html', date_today=date_today, keys=keys)
