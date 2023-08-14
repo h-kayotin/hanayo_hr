@@ -15,8 +15,8 @@
         <img id="lg" src="static/pic/logo.png" alt="">
     </div>
     <div class="input_row">
-        <form method="post">
-            <label ></label>
+        <form method="POST">
+            <label for="search_text"></label>
             <input name="search_text" id="search_text" class="search_l" placeholder=" 请输入关键字进行搜索"
                    onfocus="this.placeholder=''" onblur="this.placeholder=' 请输入内容.....'" required>
             <input type="submit" value="搜索" class = "search_r">
@@ -30,17 +30,22 @@
         {% endfor %}
     </div>
 
+    {% if res_text %}
     <div class="result_text">
         <p>
-            搜索运作结果
+            搜索结果：{{res_text}}
         </p>
-
-
     </div>
+    {% endif %}
 
-    <div class="analysis_btn">
-        职位分析
+    {% if input_key %}
+    <div  class= "details_btn" >
+        <a href="{{ url_for('index.show_records', key_word=input_key) }}" >查看详情</a>
     </div>
+    <div  class= "analysis_btn" >
+        <a href="{{ url_for('index.show_echarts', key_word=input_key) }}" >查看职位分析</a>
+    </div>
+    {% endif %}
 
 
 </div>

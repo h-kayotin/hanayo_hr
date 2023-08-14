@@ -5,7 +5,7 @@ Author: kayotin
 Date 2023/8/4
 """
 
-from config import COOKIE, user_agent, DATABASE, USERNAME, PASSWORD
+from hanayo_hr.config import COOKIE, user_agent, DATABASE, USERNAME, PASSWORD
 import requests
 import random
 from bs4 import BeautifulSoup
@@ -15,6 +15,7 @@ import datetime
 from concurrent.futures import ThreadPoolExecutor
 from threading import RLock
 import os
+import queue
 
 city_dict = {
     "上海": 538,
@@ -50,18 +51,18 @@ class SpiderHR:
             os.makedirs(self.log_path)
         self.count = 0
         self.lock = RLock()
+        self.keys_count = 0
 
     def get_key_count(self):
-        sql_text = """
-            select keys_name from tb_keys 
+        """获取是否已有这个关键词，如果有返回True"""
+        sql_text = f"""
+            select keys_count from tb_keys where keys_name = "{self.key_word}";
         """
         with self.db.cursor() as cursor:
             affected_rows = cursor.execute(sql_text)
             if affected_rows:
-                rows = cursor.fetchall()
-                self.key_word_count = len(rows) + 1
-                return False
-
+                res_list = [row[0] for row in cursor.fetchall()]
+                self.keys_count = int(res_list[0]) + 1
 
     def get_headers(self):
         """
@@ -191,19 +192,24 @@ class SpiderHR:
             self.save_log(False, err_log)
 
     def save_key(self):
-        sql_text = f"""
-            insert into tb_keys (keys_name, keys_count) 
-            values("{self.key_word}", "{data['data_company']}")
-        """
+        """如果没搜索过这个关键字，把这个关键字保存，count表示这个关键字被搜索过一次；
+        如果已经被搜索过了，这个次数更新+1"""
+        if self.keys_count > 0:
+            sql_text = f"""
+                update tb_keys set keys_count = {self.keys_count} where keys_name = "{self.key_word}";
+            """
+        else:
+            sql_text = f"""
+                insert into tb_keys (keys_name, keys_count) 
+                values("{self.key_word}", 1)
+            """
         try:
             # 获取游标对象
             with self.db.cursor() as cursor:
                 # 通过游标对象对数据库服务器发出sql语句
                 affected_rows = cursor.execute(sql_text)
                 if affected_rows == 1:
-                    self.count += 1
-                if self.count % 100 == 0:
-                    print(f"已保存{self.count}条数据-->", end="")
+                    print(f"更新{self.key_word}的搜索次数成功-->", end="")
                     # print("插入数据成功")
             self.db.commit()
         except pymysql.MySQLError as err:
@@ -213,12 +219,15 @@ class SpiderHR:
             print(err_log)
             self.save_log(False, err_log)
 
-
     def clo_db(self):
-        suc_log = f"数据读取完毕，共保存了{self.count}条数据。\n"
+        if self.count > 0:
+            suc_log = f"数据读取完毕，共保存了{self.count}条数据。\n"
+        else:
+            suc_log = f"本次没有进行数据爬虫读取。\n"
         print(suc_log)
         self.save_log(True, suc_log)
         self.db.close()
+        return suc_log
 
     def save_log(self, log_type, log_txt):
         """
@@ -234,18 +243,27 @@ class SpiderHR:
         with open(f"{self.log_path}/{log_name}", "a", encoding="utf-8") as file:
             file.write(log_txt)
 
-    def do_work(self):
-        log_txt = f"开始读取城市：{self.city_cn}，关键字：{self.key_word}的数据\n"
-        print(log_txt, end="")
-        self.save_log(True, log_txt)
-        self.get_headers()
-        self.get_info_by_pages()
-        self.clo_db()
+    def do_work(self, q: queue.Queue = None):
+        self.get_key_count()
+        if self.keys_count > 0:
+            log_text = f"{self.city_cn}的{self.key_word}数据已在数据库中，可以直接查看。\n"
+            print(log_text)
+        else:
+            log_text = f"开始读取城市：{self.city_cn}，关键字：{self.key_word}的数据\n"
+            print(log_text, end="")
+            self.save_log(True, log_text)
+            self.get_headers()
+            self.get_info_by_pages()
+        self.save_key()
+        suc_log = self.clo_db()
+        if q:
+            q.put(log_text + suc_log)
 
 
 if __name__ == '__main__':
-    my_spider = SpiderHR("python", "上海")
+    my_spider = SpiderHR("c++", "上海")
     my_spider.do_work()
+
 
 
 

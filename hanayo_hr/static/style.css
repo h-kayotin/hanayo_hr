@@ -203,10 +203,10 @@ nav ul li a, nav ul li span, header .action {
     position: absolute;
     top:50%;
     left:625px;
-    width: 546px;
+    width: 500px;
 }
 
-.main .analysis_btn {
+.main .details_btn a {
     position: absolute;
     top:50%;
     left:1173px;
@@ -218,6 +218,28 @@ nav ul li a, nav ul li span, header .action {
     border-radius:10px 10px 10px 10px;
     font-size:14px;
     color:#fff;
+    text-align: center;
+}
+
+.main .analysis_btn a {
+    position: absolute;
+    top:60%;
+    left:1173px;
+    cursor: pointer;
+
+
+    line-height: 45px;
+    background-color: grey;
+    border-radius:10px 10px 10px 10px;
+    font-size:14px;
+    color:#fff;
+    text-align: center;
+}
+
+.main .analysis_btn a {
+    width: 100px;
+    height:44px;
+    display: block;
     text-align: center;
 }
 
