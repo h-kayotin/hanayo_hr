@@ -79,11 +79,15 @@ def get_datas_by_keyword(key_word, is_all=False, start_page=0, page_size=20):
     sql_text = """
     select * from tb_data WHERE data_post like "%python%" or data_content like "%python%";
     """
+    records = []
+    total_page = 0
+    return records,total_page
 
 
 @bp.route('/show_details/<key_word>')
 def show_records(key_word):
     """详细展示某职位数据"""
+
     return key_word
 
 
