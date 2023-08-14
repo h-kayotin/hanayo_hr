@@ -22,12 +22,8 @@ bp = Blueprint('index', __name__)
 date_today = datetime.datetime.today().strftime('%Y-%m-%d')
 
 
-def get_keys_data():
-    """从数据库获取需要关键字数据"""
+def run_sql(sql_text):
     conn = get_db()
-    sql_text = """
-        select keys_name, keys_count from tb_keys ORDER BY keys_count DESC  limit 0, 3;
-    """
     res_list = []
     try:
         with conn.cursor() as cursor:
@@ -42,8 +38,14 @@ def get_keys_data():
     except pymysql.MySQLError as err:
         conn.rollback()
         print(type(err), err)
-    finally:
-        conn.close()
+
+
+def get_keys_data():
+    """从数据库获取需要关键字数据"""
+    sql_text = """
+        select keys_name, keys_count from tb_keys ORDER BY keys_count DESC  limit 0, 3;
+    """
+    return run_sql(sql_text)
 
 
 @bp.route('/', methods=("GET", "POST"))
@@ -74,21 +76,32 @@ def index():
                            keys=keys, res_text=None, input_key=None)
 
 
-def get_datas_by_keyword(key_word, is_all=False, start_page=0, page_size=20):
-    """获取数据的，模糊获取所有包含某关键字的数据"""
-    sql_text = """
-    select * from tb_data WHERE data_post like "%python%" or data_content like "%python%";
-    """
-    records = []
-    total_page = 0
-    return records,total_page
-
-
 @bp.route('/show_details/<key_word>')
-def show_records(key_word):
+def show_records(key_word, start_page=0, page_size=20):
     """详细展示某职位数据"""
+    sql_text = f"""
+        select * from tb_data where data_post like "%{key_word}%" or data_content like "%{key_word}%"
+        ORDER BY data_id limit {start_page*page_size},{page_size};
+    """
+    records_tuples = run_sql(sql_text)
+    keys = ["data_id", "data_post", "data_company", "data_address", "data_salary_min",
+            "data_salary_max", "data_date", "data_edu", "data_exp", "data_content"]
+    records = []
+    for record_tuple in records_tuples:
+        new_record = dict(zip(keys, record_tuple))
+        records.append(new_record)
 
-    return key_word
+    sql_count = f"""
+            SELECT count(*) as total_num from tb_data 
+            WHERE data_post like "%{key_word}%" or data_content like "%{key_word}%";
+        """
+    print(sql_count)
+    total_page = run_sql(sql_count)[0][0]
+    print(total_page)
+    current_page = start_page + 1
+
+    return render_template('pages/records.html', records=records, total_page=total_page,
+                           current_page=current_page)
 
 
 @bp.route('/echarts/<key_word>')
