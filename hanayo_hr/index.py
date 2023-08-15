@@ -46,7 +46,7 @@ def run_sql(sql_text):
 def get_keys_data():
     """从数据库获取需要关键字数据"""
     sql_text = """
-        select keys_name, keys_count from tb_keys ORDER BY keys_count DESC  limit 0, 3;
+        select keys_name, keys_count from tb_keys ORDER BY keys_count DESC  limit 0, 5;
     """
     return run_sql(sql_text)
 

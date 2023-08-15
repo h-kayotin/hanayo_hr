@@ -23,7 +23,7 @@
     <div class ="keys_div">
         热门关键词：
         {% for key in keys %}
-        <a class="key_word" href="/">{{key["keys_name"]}}</a>
+        <a class="key_word" href="{{ url_for('index.show_records', key_word=key['keys_name']) }}">{{key["keys_name"]}}</a>
         {% endfor %}
     </div>
 
