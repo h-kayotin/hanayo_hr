@@ -31,15 +31,11 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
-    # @app.route('/favicon.ico')
-    # def favicon():
-    #     """设置网站图标"""
-    #     return send_from_directory(os.path.join(app.root_path, 'static'),
-    #                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
-
-    # from . import auth
-    # app.register_blueprint(auth.bp)
+    @app.route('/favicon.ico')
+    def favicon():
+        """设置网站图标"""
+        return send_from_directory(os.path.join(app.root_path, 'static/pic'),
+                                   'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     from . import index
     app.register_blueprint(index.bp)

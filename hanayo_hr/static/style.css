@@ -8,7 +8,7 @@ html {
   font-family: sans-serif;
   background: #eee;
   padding: 1rem;
-  height:100%;
+
   width: 100%;
 }
 
@@ -68,6 +68,13 @@ nav ul  {
 nav ul li a, nav ul li span, header .action {
   display: block;
   padding: 0.5rem;
+
+}
+
+.action {
+    margin-top:10px;
+    padding: 10px;
+    text-decoration:underline;
 }
 
 .content {
@@ -85,13 +92,6 @@ nav ul li a, nav ul li span, header .action {
   margin: 1rem 0 0.25rem 0;
 }
 
-/* 可删除*/
-.flash {
-  margin: 1em 0;
-  padding: 1em;
-  background: #cae6f6;
-  border: 1px solid #377ba8;
-}
 
 .post > header {
   display: flex;
@@ -243,24 +243,7 @@ nav ul li a, nav ul li span, header .action {
     text-align: center;
 }
 
-.footer{
-    width: 80%;
-    height: 40px;
-    position:fixed;
-    bottom:0;
-    background-color: #fbfbfb;
-    line-height: 40px;
-    font-size:12px;
-    margin: 0 auto;
-}
-.footer_l li a{
-    float:left;
-    padding-left:14px;
-    color:#9195a3;
-}
-.footer_l li a:hover{
-    color:#222;
-}
+
 
 
 

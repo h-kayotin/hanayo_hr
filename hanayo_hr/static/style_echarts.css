@@ -1,0 +1,23 @@
+.outer {
+  width: 80%;
+}
+
+.first {
+  width: 600px; height: 400px
+}
+
+.second {
+  width: 920px; height: 400px
+}
+
+.left {
+    float:left;
+    width: 450px; height: 400px;
+    margin-right:20px;
+}
+
+.right {
+    float:left;
+    width: 450px; height: 400px;
+
+}

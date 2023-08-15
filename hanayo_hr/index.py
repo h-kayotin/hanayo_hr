@@ -12,11 +12,14 @@ from flask import (
 from werkzeug.exceptions import abort
 import datetime
 import math
-from hanayo_hr.db import get_db
+from hanayo_hr.db import get_db, get_db_pd
 import pymysql
 from hanayo_hr.spider_hr import SpiderHR
 import threading
 import queue
+import pandas as pd
+from sqlalchemy import text
+import matplotlib.pyplot as plt
 
 bp = Blueprint('index', __name__)
 date_today = datetime.datetime.today().strftime('%Y-%m-%d')
@@ -34,7 +37,7 @@ def run_sql(sql_text):
                     res_list.append(row)
                 else:
                     break
-            return res_list
+        return res_list
     except pymysql.MySQLError as err:
         conn.rollback()
         print(type(err), err)
@@ -77,7 +80,8 @@ def index():
 
 
 @bp.route('/show_details/<key_word>')
-def show_records(key_word, start_page=0, page_size=20):
+def show_records(key_word, start_page=1, page_size=10):
+    start_page = int(start_page) - 1
     """详细展示某职位数据"""
     sql_text = f"""
         select * from tb_data where data_post like "%{key_word}%" or data_content like "%{key_word}%"
@@ -95,17 +99,70 @@ def show_records(key_word, start_page=0, page_size=20):
             SELECT count(*) as total_num from tb_data 
             WHERE data_post like "%{key_word}%" or data_content like "%{key_word}%";
         """
-    print(sql_count)
-    total_page = run_sql(sql_count)[0][0]
-    print(total_page)
+    total_page = math.ceil(run_sql(sql_count)[0][0] / page_size)
     current_page = start_page + 1
-
     return render_template('pages/records.html', records=records, total_page=total_page,
-                           current_page=current_page)
+                           current_page=current_page, date_today=date_today, key_word=key_word)
+
+
+@bp.route('/<key_word>/<page>')
+def next_page(page, key_word):
+    """对于筛选后的结果进行翻页"""
+    next_page_num = int(page)
+    # print(f"当前页码是{page}，筛选项目是{status}")
+    if next_page_num > 0:
+        return show_records(key_word, next_page_num)
+    else:
+        return show_records(key_word)
+
+
+def get_dataframe(key_word):
+    """获取某关键字的所有dataframe对象"""
+    engine = get_db_pd()
+    sql_text = f"""
+        select * from tb_data 
+        where data_post like "%{key_word}%" or data_content like "%{key_word}%";
+    """
+    data_frame = pd.read_sql(text(sql_text), engine.connect(), index_col='data_id')
+    return data_frame
+
+
+def get_salary_echarts_data(df):
+    """获取供图表展示的薪资数据"""
+    df_salary = df[["data_salary_min", "data_salary_max"]]
+    df_salary = df_salary.drop(df_salary[(df_salary.data_salary_min < 2000)].index)
+    df_salary["mean"] = (df_salary["data_salary_min"] + df_salary["data_salary_max"]) / 2
+    bins = [0, 8000, 12000, 15000, 20000, df_salary["mean"].max()]
+    df_salary["group"] = pd.cut(df_salary["mean"], bins=bins)
+    grouped = df_salary.groupby("group")
+    values_list = []
+    for name, group in grouped:
+        values_list.append(len(group))
+    columns = ["8k以下", "8k-12k", "12k-15k", "15k-20k", "20k以上"]
+    return columns, values_list
+
+
+def get_pie_data(df, option):
+    """获取供饼图展示的数据"""
+    df_exp = df[[option]]
+    groups = df_exp.groupby(option)
+    groups = groups[option].count()
+    res_list = []
+    for key, value in groups.items():
+        res_list.append({
+            "name": key, "value": value
+        })
+    return res_list
 
 
 @bp.route('/echarts/<key_word>')
 def show_echarts(key_word):
     """展示数据分析图表"""
-    return key_word
+    df = get_dataframe(key_word)
+    salary_columns, salary_values = get_salary_echarts_data(df)
+    edu_list = get_pie_data(df, "data_edu")
+    exp_list = get_pie_data(df, "data_exp")
+
+    return render_template('pages/echarts.html', date_today=date_today, salary_columns=salary_columns,
+                           salary_values=salary_values, edu_list=edu_list, exp_list=exp_list)
 

@@ -7,8 +7,9 @@ Date 2023/8/10
 
 
 from flask import current_app, g
-from hanayo_hr.config import DATABASE, USERNAME, PASSWORD
+from hanayo_hr.config import DATABASE, USERNAME, PASSWORD, DB_URI
 import pymysql
+from sqlalchemy import create_engine
 
 
 def get_db():
@@ -18,6 +19,13 @@ def get_db():
                                user=USERNAME, password=PASSWORD,
                                database=DATABASE, charset="utf8mb4")
     return g.db
+
+
+def get_db_pd():
+    """用pandas连接数据库"""
+    engine = create_engine(DB_URI)
+    return engine
+
 
 
 def close_db(e=None):

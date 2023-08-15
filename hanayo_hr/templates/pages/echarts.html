@@ -1,0 +1,93 @@
+
+{% extends 'base.html' %}
+
+
+{% block header %}
+  <h1>{% block title %}职位分析{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="outer">
+      <div class="inner first" id="main" ></div>
+
+      <div class="inner second">
+        <div class="left" id="edu"></div>
+        <div class="right" id="exp" ></div>
+      </div>
+    </div>
+
+    <p>
+        <a href="/">返回首页</a>
+    </p>
+    <script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts.min.js"></script>
+    <script>
+        window.salary_columns={{ salary_columns|safe }}
+        window.salary_values={{ salary_values|safe }}
+        window.edu_list={{ edu_list|safe }}
+        window.exp_list={{ exp_list|safe }}
+    </script>
+    <script>
+        var myChart = echarts.init(document.querySelector('#main'))
+        var option = {
+            color: ['#3399ff'],
+            title: {
+                text: '薪资分布图'
+            },
+            tooltip: {},
+            legend: {
+                data:['数量']
+            },
+            xAxis: {
+                data: salary_columns
+            },
+            yAxis: {},
+            series: [
+                {
+                    name: '数量',
+                    type: 'bar',
+                    data: salary_values
+                }
+            ]
+        }
+        myChart.setOption(option)
+    </script>
+    <script>
+        var eduChart = echarts.init(document.querySelector('#edu'))
+        var option = {
+            title: {
+                text: '学历要求'
+            },
+            tooltip: {
+                        trigger: 'item',
+                        formatter: '{b} : {c} ({d}%)'
+                      },
+            series: [
+                {
+                    type: 'pie',
+                    data: edu_list
+                }
+            ]
+        }
+        eduChart.setOption(option)
+    </script>
+    <script>
+        var expChart = echarts.init(document.querySelector('#exp'))
+        var option = {
+            title: {
+                text: '经验要求'
+            },
+            tooltip: {
+                        trigger: 'item',
+                        formatter: '{b} : {c} ({d}%)'
+                      },
+            series: [
+                {
+                    type: 'pie',
+                    data: exp_list
+                }
+            ]
+        }
+        expChart.setOption(option)
+    </script>
+
+{% endblock %}

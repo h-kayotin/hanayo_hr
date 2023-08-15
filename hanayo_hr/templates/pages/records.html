@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Posts{% endblock %}</h1>
+  <h1>{% block title %}职位展示{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -21,4 +21,18 @@
       <hr>
     {% endif %}
   {% endfor %}
+
+<hr>
+    {% if total_page > 1  %}
+        {% if current_page>1 %}
+    <a class="action" href="{{ url_for('index.next_page', page=1, key_word=key_word) }}">回到首页</a>
+    <a class="action" href="{{ url_for('index.next_page', page=(current_page-1), key_word=key_word) }}">上一页</a>
+        {% endif %}
+    <a class="action" href="">{{current_page}}</a>
+        {% if total_page > current_page %}
+    <a class="action" href="{{ url_for('index.next_page', page=(current_page+1), key_word=key_word) }}">下一页</a>
+    <a class="action" href="{{ url_for('index.next_page', page=total_page, key_word=key_word) }}">最后一页({{total_page}})</a>
+        {% endif %}
+    {% endif %}
+
 {% endblock %}
