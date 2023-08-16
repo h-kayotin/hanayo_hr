@@ -29,7 +29,7 @@ http://127.0.0.1:5000/
 
 ![Untitled](hanayo_hr/static/pic/home.png)
 
-1. 如果是之前已经输入过的关键字，将不会进行爬取，可以查看结果
+1. 如果是之前已经输入过的关键字，将不会进行爬取，可以直接查看结果
     
     ![Untitled](hanayo_hr/static/pic/no_new.png)
     
