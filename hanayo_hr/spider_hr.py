@@ -5,7 +5,7 @@ Author: kayotin
 Date 2023/8/4
 """
 
-from hanayo_hr.config import COOKIE, user_agent, DATABASE, USERNAME, PASSWORD
+from hanayo_hr.config import COOKIE, user_agent, DATABASE, USERNAME, PASSWORD, HOST
 import requests
 import random
 from bs4 import BeautifulSoup
@@ -41,7 +41,7 @@ class SpiderHR:
         self.total_page = 0
         self.headers = {
         }
-        self.db = pymysql.connect(host="192.168.32.11", port=3306,
+        self.db = pymysql.connect(host=HOST, port=3306,
                                   user=USERNAME, password=PASSWORD,
                                   database=DATABASE, charset="utf8mb4")
         self.datetime = datetime.datetime.today()

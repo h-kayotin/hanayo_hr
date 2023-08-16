@@ -33,6 +33,7 @@
     <a class="action" href="{{ url_for('index.next_page', page=(current_page+1), key_word=key_word) }}">下一页</a>
     <a class="action" href="{{ url_for('index.next_page', page=total_page, key_word=key_word) }}">最后一页({{total_page}})</a>
         {% endif %}
+    <a class="action" href="{{ url_for('index.show_echarts', key_word=key_word) }}">查看职位分析</a>
     {% endif %}
 
 {% endblock %}

@@ -164,5 +164,5 @@ def show_echarts(key_word):
     exp_list = get_pie_data(df, "data_exp")
 
     return render_template('pages/echarts.html', date_today=date_today, salary_columns=salary_columns,
-                           salary_values=salary_values, edu_list=edu_list, exp_list=exp_list)
+                           salary_values=salary_values, edu_list=edu_list, exp_list=exp_list, key_word=key_word)
 

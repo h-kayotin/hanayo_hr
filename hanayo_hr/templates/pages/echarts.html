@@ -18,6 +18,7 @@
 
     <p>
         <a href="/">返回首页</a>
+        <a href="{{ url_for('index.show_records', key_word=key_word) }}">返回详情页</a>
     </p>
     <script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts.min.js"></script>
     <script>
