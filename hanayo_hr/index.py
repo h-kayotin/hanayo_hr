@@ -7,7 +7,7 @@ Date 2023/8/10
 import time
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, session
+    Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
 import datetime
@@ -19,7 +19,6 @@ import threading
 import queue
 import pandas as pd
 from sqlalchemy import text
-import matplotlib.pyplot as plt
 
 bp = Blueprint('index', __name__)
 date_today = datetime.datetime.today().strftime('%Y-%m-%d')
