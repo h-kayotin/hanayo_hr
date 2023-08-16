@@ -109,7 +109,6 @@ def show_records(key_word, start_page=1, page_size=10):
 def next_page(page, key_word):
     """对于筛选后的结果进行翻页"""
     next_page_num = int(page)
-    # print(f"当前页码是{page}，筛选项目是{status}")
     if next_page_num > 0:
         return show_records(key_word, next_page_num)
     else:
