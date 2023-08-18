@@ -37,8 +37,13 @@ def create_app(test_config=None):
         return send_from_directory(os.path.join(app.root_path, 'static/pic'),
                                    'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-    from . import index
+    from hanayo_hr import index
     app.register_blueprint(index.bp)
     app.add_url_rule('/', endpoint='index')
 
     return app
+
+
+if __name__ == '__main__':
+    my_app = create_app()
+    my_app.run(debug=True)
