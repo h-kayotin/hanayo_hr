@@ -9,6 +9,12 @@
 
 其他所需库，请见requirements.txt
 
+### 网站结构
+
+见下图
+![Untitled](hanayo_hr/static/pic/site_structure.png)
+
+
 ### 运行
 
 请在虚拟环境运行如下命令启动应用：
