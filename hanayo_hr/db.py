@@ -27,7 +27,6 @@ def get_db_pd():
     return engine
 
 
-
 def close_db(e=None):
     """关闭数据库连接"""
     db = g.pop('db', None)
